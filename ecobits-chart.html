@@ -1,0 +1,38 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>EcoBits Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <h2 style="text-align:center;">Your EcoBits Module Scores</h2>
+    <canvas id="ecobitsChart" width="400" height="300"></canvas>
+    <script>
+      const ctx = document.getElementById('ecobitsChart').getContext('2d');
+      const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Habits', 'Behavior', 'Trade-offs', 'Planning', 'Belief', 'Peer Effect'],
+          datasets: [{
+            label: 'Sample Scores',
+            data: [10, 15, 5, 6, 8, 4],
+            backgroundColor: 'rgba(46, 139, 87, 0.6)',
+            borderColor: 'rgba(46, 139, 87, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 25
+            }
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
