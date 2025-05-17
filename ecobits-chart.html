@@ -1,23 +1,46 @@
-
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="UTF-8" />
-    <title>EcoBits Chart</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <title>EcoBits Chart</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+      }
+      canvas {
+        display: block;
+        max-width: 100%;
+        height: auto;
+      }
+    </style>
   </head>
   <body>
-    <h2 style="text-align:center;">Your EcoBits Module Scores</h2>
-    <canvas id="ecobitsChart" width="400" height="300"></canvas>
+    <canvas id="myChart" width="400" height="300"></canvas>
+
     <script>
-      const ctx = document.getElementById('ecobitsChart').getContext('2d');
-      const chart = new Chart(ctx, {
+      function getParam(name) {
+        const url = new URL(window.location.href);
+        return parseFloat(url.searchParams.get(name)) || 0;
+      }
+
+      const habit = getParam('habit');
+      const behavior = getParam('behavior');
+      const tradeoff = getParam('tradeoff');
+      const planning = getParam('planning');
+      const belief = getParam('belief');
+      const agent = getParam('agent');
+
+      const ctx = document.getElementById('myChart').getContext('2d');
+      new Chart(ctx, {
         type: 'bar',
         data: {
           labels: ['Habits', 'Behavior', 'Trade-offs', 'Planning', 'Belief', 'Peer Effect'],
           datasets: [{
-            label: 'Sample Scores',
-            data: [10, 15, 5, 6, 8, 4],
+            label: 'Your EcoBits Module Scores',
+            data: [habit, behavior, tradeoff, planning, belief, agent],
             backgroundColor: 'rgba(46, 139, 87, 0.6)',
             borderColor: 'rgba(46, 139, 87, 1)',
             borderWidth: 1
