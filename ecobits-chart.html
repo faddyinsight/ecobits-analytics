@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8" />
+    <title>EcoBits Module Scores</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <meta charset="UTF-8">
-    <title>EcoBits Chart</title>
     <style>
       body {
         margin: 0;
@@ -19,35 +19,49 @@
   </head>
   <body>
     <canvas id="myChart" width="400" height="300"></canvas>
-
     <script>
       function getParam(name) {
         const url = new URL(window.location.href);
-        return parseFloat(url.searchParams.get(name)) || 0;
+        return JSON.parse(url.searchParams.get(name) || "[]");
       }
 
-      const habit = getParam('habit');
-      const behavior = getParam('behavior');
-      const tradeoff = getParam('tradeoff');
-      const planning = getParam('planning');
-      const belief = getParam('belief');
-      const agent = getParam('agent');
+      const latest = getParam("latest");     // e.g. [5, 8, 4, 6, 7, 3]
+      const previous = getParam("previous"); // e.g. [4, 6, 3, 5, 6, 2]
+      const average = getParam("average");   // e.g. [4.5, 7, 3.5, 5.5, 6.5, 2.5]
+
+      const labels = ['Habits', 'Behavior', 'Trade-offs', 'Planning', 'Belief', 'Peer Effect'];
 
       const ctx = document.getElementById('myChart').getContext('2d');
       new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: ['Habits', 'Behavior', 'Trade-offs', 'Planning', 'Belief', 'Peer Effect'],
-          datasets: [{
-            label: 'Your EcoBits Module Scores',
-            data: [habit, behavior, tradeoff, planning, belief, agent],
-            backgroundColor: 'rgba(46, 139, 87, 0.6)',
-            borderColor: 'rgba(46, 139, 87, 1)',
-            borderWidth: 1
-          }]
+          labels: labels,
+          datasets: [
+            {
+              label: 'Latest Score',
+              data: latest,
+              backgroundColor: 'rgba(46, 139, 87, 0.8)' // Green
+            },
+            {
+              label: 'Previous Score',
+              data: previous,
+              backgroundColor: 'rgba(70, 130, 180, 0.8)' // Blue
+            },
+            {
+              label: 'Average Score',
+              data: average,
+              backgroundColor: 'rgba(220, 20, 60, 0.8)' // Red
+            }
+          ]
         },
         options: {
           responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Your EcoBits Module Scores'
+            }
+          },
           scales: {
             y: {
               beginAtZero: true,
