@@ -2,93 +2,44 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>EcoBits Habit Score History</title>
+  <title>EcoBits Behavior Score History</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body {
-      margin: 0;
-      padding: 1em;
-      font-family: Arial, sans-serif;
-      background-color: #fff;
-    }
-    canvas {
-      max-width: 100%;
-      height: auto;
-    }
-    h3 {
-      margin-bottom: 0.5em;
-      font-size: 18px;
-    }
+    body { margin: 0; padding: 1em; font-family: Arial, sans-serif; }
+    canvas { max-width: 100%; height: auto; }
+    h3 { margin-bottom: 0.5em; font-size: 18px; }
   </style>
 </head>
 <body>
-  <h3>Score History – Daily Habits</h3>
-  <canvas id="habitChart"></canvas>
-
+  <h3>Score History – Peer/Community Influence</h3>
+  <canvas id="chart"></canvas>
   <script>
-    function getHistoryParam() {
-      const url = new URL(window.location.href);
-      try {
-        return JSON.parse(url.searchParams.get("history") || "[]");
-      } catch (e) {
-        return [];
-      }
-    }
-
-    const history = getHistoryParam();
-    const labels = history.map(d => d.date);
-    const data = history.map(d => d.score);
-
-    const ctx = document.getElementById("habitChart").getContext("2d");
-
+    const data = JSON.parse(new URLSearchParams(window.location.search).get("history") || "[]");
+    const ctx = document.getElementById("chart").getContext("2d");
     new Chart(ctx, {
       type: 'line',
       data: {
-        labels: labels,
+        labels: data.map(p => p.date),
         datasets: [{
-          label: 'Daily Habits Score',
-          data: data,
+          label: 'Agent Score',
+          data: data.map(p => p.score),
           fill: false,
-          borderColor: 'blue',
-          tension: 0.4,
-          pointRadius: 4,
-          pointHoverRadius: 6
+          borderColor: 'red',
+          tension: 0.4
         }]
       },
       options: {
         responsive: true,
-        animation: true,
-        plugins: {
-          legend: {
-            display: false
-          },
-          tooltip: {
-            callbacks: {
-              label: context => `Score: ${context.parsed.y}`
-            }
-          },
-          title: {
-            display: false
-          }
-        },
+        plugins: { legend: { display: false } },
         scales: {
-          y: {
-            beginAtZero: true,
-            title: {
-              display: true,
-              text: 'Score'
-            }
-          },
-          x: {
-            title: {
-              display: true,
-              text: 'Date'
-            }
-          }
+          y: { beginAtZero: true, title: { display: true, text: 'Score' } },
+          x: { title: { display: true, text: 'Date' } }
         }
       }
     });
   </script>
 </body>
 </html>
+
+
 
