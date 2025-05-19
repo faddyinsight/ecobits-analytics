@@ -1,1 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>EcoBits Habit Score History</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 1em;
+      font-family: Arial, sans-serif;
+      background-color: #fff;
+    }
+    canvas {
+      max-width: 100%;
+      height: auto;
+    }
+    h3 {
+      margin-bottom: 0.5em;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h3>Score History – Daily Habits</h3>
+  <canvas id="habitChart"></canvas>
+
+  <script>
+    function getHistoryParam() {
+      const url = new URL(window.location.href);
+      try {
+        return JSON.parse(url.searchParams.get("history") || "[]");
+      } catch (e) {
+        return [];
+      }
+    }
+
+    const history = getHistoryParam();
+    const labels = history.map(d => d.date);
+    const data = history.map(d => d.score);
+
+    const ctx = document.getElementById("habitChart").getContext("2d");
+
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Daily Habits Score',
+          data: data,
+          fill: false,
+          borderColor: 'blue',
+          tension: 0.4,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        animation: true,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: context => `Score: ${context.parsed.y}`
+            }
+          },
+          title: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Score'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Date'
+            }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
 
