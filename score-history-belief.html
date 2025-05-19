@@ -1,1 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>EcoBits Behavior Score History</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { margin: 0; padding: 1em; font-family: Arial, sans-serif; }
+    canvas { max-width: 100%; height: auto; }
+    h3 { margin-bottom: 0.5em; font-size: 18px; }
+  </style>
+</head>
+<body>
+  <h3>Score History – Belief in Impact</h3>
+  <canvas id="chart"></canvas>
+  <script>
+    const data = JSON.parse(new URLSearchParams(window.location.search).get("history") || "[]");
+    const ctx = document.getElementById("chart").getContext("2d");
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: data.map(p => p.date),
+        datasets: [{
+          label: 'Belief Score',
+          data: data.map(p => p.score),
+          fill: false,
+          borderColor: 'teal',
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, title: { display: true, text: 'Score' } },
+          x: { title: { display: true, text: 'Date' } }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
+
+
 
