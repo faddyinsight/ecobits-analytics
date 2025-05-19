@@ -2,121 +2,37 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Your EcoBits Scores</title>
+    <title>EcoBits Scores</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-      :root {
-        --bg: #ffffff;
-        --text: #111;
-        --button: #4CAF50;
-        --button-hover: #388e3c;
-      }
-
-      body.dark {
-        --bg: #121212;
-        --text: #ffffff;
-        --button: #1976d2;
-        --button-hover: #0d47a1;
-      }
-
       body {
-        background-color: var(--bg);
-        color: var(--text);
+        margin: 0;
+        padding: 0;
         font-family: Arial, sans-serif;
-        margin: 30px;
-        text-align: center;
       }
-
       canvas {
+        display: block;
         max-width: 100%;
-        margin-bottom: 20px;
-      }
-
-      .button-row, .toggle-row {
-        display: flex;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin: 10px 0;
-      }
-
-      button {
-        padding: 8px 16px;
-        font-size: 14px;
-        border: none;
-        border-radius: 6px;
-        background-color: var(--button);
-        color: white;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-      }
-
-      button:hover {
-        background-color: var(--button-hover);
-      }
-
-      .left-title {
-        text-align: left;
-        margin-top: 40px;
-        margin-left: 10px;
-        font-size: 18px;
-        font-weight: bold;
-      }
-
-      .top-bar {
-        display: flex;
-        justify-content: flex-end;
+        height: auto;
       }
     </style>
   </head>
   <body>
-    <div class="top-bar">
-      <button onclick="toggleDarkMode()">🌙 Dark Mode</button>
-    </div>
-
-    <h2>Your EcoBits Scores</h2>
-    <canvas id="barChart" height="300"></canvas>
-
-    <div class="button-row">
-      <button onclick="downloadChart()">Download Chart as Image</button>
-      <button onclick="printChart()">Print Chart</button>
-      <button onclick="copyLink()">Copy Shareable Link</button>
-    </div>
-
-    <div class="left-title">Score History</div>
-    <div class="toggle-row">
-      <button onclick="setTimeframe('1w')">1 Week</button>
-      <button onclick="setTimeframe('2w')">2 Weeks</button>
-      <button onclick="setTimeframe('1m')">1 Month</button>
-      <button onclick="setTimeframe('6m')">6 Months</button>
-      <button onclick="setTimeframe('ytd')">YTD</button>
-    </div>
-    <canvas id="lineChart" height="250"></canvas>
-
+    <canvas id="myChart" width="400" height="300"></canvas>
     <script>
-      // Helpers
       function getParam(name) {
         const url = new URL(window.location.href);
         return JSON.parse(url.searchParams.get(name) || "[]");
       }
 
-      function toPercent(val) {
-        return `${Math.round((val / 25) * 100)}%`;
-      }
+      const latest = getParam("latest");     // e.g. [5, 8, 4, 6, 7, 3]
+      const previous = getParam("previous"); // e.g. [4, 6, 3, 5, 6, 2]
+      const average = getParam("average");   // e.g. [4.5, 7, 3.5, 5.5, 6.5, 2.5]
 
-      // Dark mode toggle
-      function toggleDarkMode() {
-        document.body.classList.toggle("dark");
-      }
-
-      // Charts data
-      const latest = getParam("latest");
-      const previous = getParam("previous");
-      const average = getParam("average");
       const labels = ['Habits', 'Behavior', 'Trade-offs', 'Planning', 'Belief', 'Peer Effect'];
 
-      const barCtx = document.getElementById('barChart').getContext('2d');
-      const barChart = new Chart(barCtx, {
+      const ctx = document.getElementById('myChart').getContext('2d');
+      new Chart(ctx, {
         type: 'bar',
         data: {
           labels: labels,
@@ -124,35 +40,27 @@
             {
               label: 'Latest Score',
               data: latest,
-              backgroundColor: 'rgba(54, 162, 235, 0.7)'
+              backgroundColor: 'rgba(54, 162, 235, 0.7)'  // Blue
             },
             {
               label: 'Previous Score',
               data: previous,
-              backgroundColor: 'rgba(255, 99, 132, 0.7)'
+              backgroundColor: 'rgba(255, 99, 132, 0.7)'  // Red
             },
             {
               label: 'Average Score',
               data: average,
-              backgroundColor: 'rgba(255, 206, 86, 0.7)'
+              backgroundColor: 'rgba(255, 206, 86, 0.7)'  // Yellow
             }
           ]
         },
         options: {
           responsive: true,
-          animation: false,
+          animation: false, // 🔧 Disable bar animation on load
           plugins: {
             title: {
               display: true,
               text: 'Your EcoBits Scores'
-            },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  const val = context.raw;
-                  return `${context.dataset.label}: ${val} (${toPercent(val)})`;
-                }
-              }
             }
           },
           scales: {
@@ -163,133 +71,6 @@
           }
         }
       });
-
-      // Sample historical score data
-      const historyLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      const historyData = {
-        '1w': {
-          labels: historyLabels,
-          latest: [12, 15, 15, 14, 20, 18, 16],
-          previous: [10, 11, 12, 14, 13, 13, 12],
-          average: [8, 9, 10, 11, 12, 11, 10]
-        },
-        '2w': {
-          labels: [...historyLabels, ...historyLabels],
-          latest: Array(14).fill().map(() => Math.floor(Math.random() * 25)),
-          previous: Array(14).fill().map(() => Math.floor(Math.random() * 25)),
-          average: Array(14).fill().map(() => Math.floor(Math.random() * 25))
-        },
-        '1m': {
-          labels: Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`),
-          latest: Array(30).fill().map(() => Math.floor(Math.random() * 25)),
-          previous: Array(30).fill().map(() => Math.floor(Math.random() * 25)),
-          average: Array(30).fill().map(() => Math.floor(Math.random() * 25))
-        },
-        '6m': {
-          labels: Array.from({ length: 24 }, (_, i) => `Week ${i + 1}`),
-          latest: Array(24).fill().map(() => Math.floor(Math.random() * 25)),
-          previous: Array(24).fill().map(() => Math.floor(Math.random() * 25)),
-          average: Array(24).fill().map(() => Math.floor(Math.random() * 25))
-        },
-        'ytd': {
-          labels: Array.from({ length: 12 }, (_, i) => `Month ${i + 1}`),
-          latest: Array(12).fill().map(() => Math.floor(Math.random() * 25)),
-          previous: Array(12).fill().map(() => Math.floor(Math.random() * 25)),
-          average: Array(12).fill().map(() => Math.floor(Math.random() * 25))
-        }
-      };
-
-      const lineCtx = document.getElementById('lineChart').getContext('2d');
-      let lineChart;
-
-      function renderLineChart(range = '1w') {
-        const dataSet = historyData[range];
-        if (lineChart) lineChart.destroy();
-        lineChart = new Chart(lineCtx, {
-          type: 'line',
-          data: {
-            labels: dataSet.labels,
-            datasets: [
-              {
-                label: 'Latest',
-                data: dataSet.latest,
-                borderColor: 'rgba(54, 162, 235, 1)',
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                fill: true,
-                tension: 0.4
-              },
-              {
-                label: 'Previous',
-                data: dataSet.previous,
-                borderColor: 'rgba(255, 99, 132, 1)',
-                backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                fill: true,
-                tension: 0.4
-              },
-              {
-                label: 'Average',
-                data: dataSet.average,
-                borderColor: 'rgba(255, 206, 86, 1)',
-                backgroundColor: 'rgba(255, 206, 86, 0.2)',
-                fill: true,
-                tension: 0.4
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            animation: false,
-            plugins: {
-              title: {
-                display: true,
-                text: `Historic Over ${range.replace(/([a-z]+)/, match => {
-                  return ({
-                    'w': 'Week(s)',
-                    'm': 'Month(s)',
-                    'ytd': 'Year to Date'
-                  })[match] || match;
-                })}`
-              }
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                max: 25
-              }
-            }
-          }
-        });
-      }
-
-      function setTimeframe(range) {
-        renderLineChart(range);
-      }
-
-      // Initial chart render
-      renderLineChart('1w');
-
-      // Utility buttons
-      function downloadChart() {
-        const link = document.createElement("a");
-        link.download = "ecobits_scores.png";
-        link.href = document.getElementById("barChart").toDataURL("image/png");
-        link.click();
-      }
-
-      function printChart() {
-        const imgData = document.getElementById("barChart").toDataURL("image/png");
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(`<img src="${imgData}" style="width:100%;">`);
-        printWindow.document.close();
-        printWindow.print();
-      }
-
-      function copyLink() {
-        const url = new URL(window.location.href);
-        navigator.clipboard.writeText(url.href).then(() => {
-          alert("✅ Link copied to clipboard!");
-        });
-      }
     </script>
   </body>
 </html>
