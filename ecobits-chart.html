@@ -2,37 +2,67 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>EcoBits Scores</title>
+    <title>Your EcoBits Scores</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
       body {
-        margin: 0;
-        padding: 0;
         font-family: Arial, sans-serif;
+        margin: 30px;
+        padding: 0;
+        text-align: center;
+        background-color: #fafafa;
       }
       canvas {
-        display: block;
         max-width: 100%;
-        height: auto;
+        margin-bottom: 20px;
+      }
+      .button-row {
+        margin-top: 10px;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        flex-wrap: wrap;
+      }
+      button {
+        padding: 8px 16px;
+        font-size: 14px;
+        border: none;
+        border-radius: 6px;
+        background-color: #4CAF50;
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+      button:hover {
+        background-color: #388e3c;
       }
     </style>
   </head>
   <body>
-    <canvas id="myChart" width="400" height="300"></canvas>
+    <h2>Your EcoBits Scores</h2>
+    <canvas id="myChart" width="600" height="400"></canvas>
+
+    <div class="button-row">
+      <button id="btnDownload">Download Chart as Image</button>
+      <button id="btnPrint">Print Chart</button>
+      <button id="btnShare">Copy Shareable Link</button>
+    </div>
+
     <script>
+      // Get chart data from URL parameters
       function getParam(name) {
         const url = new URL(window.location.href);
         return JSON.parse(url.searchParams.get(name) || "[]");
       }
 
-      const latest = getParam("latest");     // e.g. [5, 8, 4, 6, 7, 3]
-      const previous = getParam("previous"); // e.g. [4, 6, 3, 5, 6, 2]
-      const average = getParam("average");   // e.g. [4.5, 7, 3.5, 5.5, 6.5, 2.5]
+      const latest = getParam("latest");
+      const previous = getParam("previous");
+      const average = getParam("average");
 
       const labels = ['Habits', 'Behavior', 'Trade-offs', 'Planning', 'Belief', 'Peer Effect'];
 
       const ctx = document.getElementById('myChart').getContext('2d');
-      new Chart(ctx, {
+      const chart = new Chart(ctx, {
         type: 'bar',
         data: {
           labels: labels,
@@ -56,11 +86,15 @@
         },
         options: {
           responsive: true,
-          animation: false, // 🔧 Disable bar animation on load
+          animation: false, // Disable load animation
           plugins: {
             title: {
               display: true,
-              text: 'Your EcoBits Scores'
+              text: 'Your EcoBits Scores',
+              font: { size: 18 }
+            },
+            legend: {
+              position: 'top'
             }
           },
           scales: {
@@ -70,6 +104,32 @@
             }
           }
         }
+      });
+
+      // Download as image
+      document.getElementById("btnDownload").addEventListener("click", function () {
+        const link = document.createElement("a");
+        link.download = "ecobits_scores.png";
+        link.href = document.getElementById("myChart").toDataURL("image/png");
+        link.click();
+      });
+
+      // Print chart
+      document.getElementById("btnPrint").addEventListener("click", function () {
+        const printWindow = window.open('', '_blank');
+        const imgData = document.getElementById("myChart").toDataURL("image/png");
+        printWindow.document.write(`<img src="${imgData}" style="width:100%;">`);
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+      });
+
+      // Copy shareable link
+      document.getElementById("btnShare").addEventListener("click", function () {
+        const url = new URL(window.location.href);
+        navigator.clipboard.writeText(url.href).then(() => {
+          alert("✅ Link copied to clipboard!");
+        });
       });
     </script>
   </body>
