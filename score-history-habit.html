@@ -62,7 +62,7 @@
             borderWidth: 2.5,
             fill: false,
             tension: 0.4,
-            pointRadius: 0 // ✅ No visible markers
+            pointRadius: 0
           }]
         },
         options: {
@@ -73,8 +73,7 @@
           scales: {
             x: {
               ticks: {
-                autoSkip: true,
-                maxTicksLimit: 1 // ✅ Show only one date
+                autoSkip: false
               },
               grid: { display: false }
             },
