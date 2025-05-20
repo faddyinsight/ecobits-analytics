@@ -48,6 +48,7 @@
     let chart;
 
     function drawChart(data) {
+      data.sort((a, b) => new Date(a.date) - new Date(b.date));
       const ctx = document.getElementById('scoreChart').getContext('2d');
       if (chart) chart.destroy();
       chart = new Chart(ctx, {
