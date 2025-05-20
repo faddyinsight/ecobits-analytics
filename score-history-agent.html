@@ -1,45 +1,110 @@
+
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>EcoBits Behavior Score History</title>
+  <meta charset="UTF-8" />
+  <title>Score History - Agent</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { margin: 0; padding: 1em; font-family: Arial, sans-serif; }
-    canvas { max-width: 100%; height: auto; }
-    h3 { margin-bottom: 0.5em; font-size: 18px; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 20px;
+      background: white;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .filters {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .filters button {
+      margin: 0 5px;
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    canvas {
+      display: block;
+      margin: 0 auto;
+      max-width: 100%;
+    }
   </style>
 </head>
 <body>
-  <h3>Score History – Peer/Community Influence</h3>
-  <canvas id="chart"></canvas>
+  <h2>Score History - Agent</h2>
+  <div class="filters">
+    <button onclick="filterData('1W')">1W</button>
+    <button onclick="filterData('2WK')">2WK</button>
+    <button onclick="filterData('1M')">1M</button>
+    <button onclick="filterData('6M')">6M</button>
+    <button onclick="filterData('YTD')">YTD</button>
+    <button onclick="filterData('1Y')">1Y</button>
+  </div>
+  <canvas id="scoreChart" width="800" height="400"></canvas>
   <script>
-    const data = JSON.parse(new URLSearchParams(window.location.search).get("history") || "[]");
-    const ctx = document.getElementById("chart").getContext("2d");
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: data.map(p => p.date),
-        datasets: [{
-          label: 'Agent Score',
-          data: data.map(p => p.score),
-          fill: false,
-          borderColor: 'red',
-          tension: 0.4
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: { beginAtZero: true, title: { display: true, text: 'Score' } },
-          x: { title: { display: true, text: 'Date' } }
+    const rawHistory = JSON.parse(decodeURIComponent(new URLSearchParams(window.location.search).get("history") || "[]"));
+    let chart;
+
+    function drawChart(data) {
+      const ctx = document.getElementById('scoreChart').getContext('2d');
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: data.map(d => new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+          datasets: [{
+            label: 'Score',
+            data: data.map(d => d.score),
+            borderColor: '#3366cc',
+            borderWidth: 3,
+            fill: false,
+            tension: 0.4,
+            pointRadius: 3,
+            pointBackgroundColor: '#3366cc'
+          }]
+        },
+        options: {
+          plugins: {
+            legend: { display: false },
+            title: { display: false }
+          },
+          scales: {
+            x: {
+              ticks: { maxRotation: 0, minRotation: 0 },
+              grid: { display: false }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1 },
+              grid: {
+                drawBorder: false,
+                color: '#ccc'
+              }
+            }
+          }
         }
+      });
+    }
+
+    function filterData(range) {
+      const now = new Date();
+      let from;
+      switch(range) {
+        case '1W': from = new Date(now); from.setDate(now.getDate() - 7); break;
+        case '2WK': from = new Date(now); from.setDate(now.getDate() - 14); break;
+        case '1M': from = new Date(now); from.setMonth(now.getMonth() - 1); break;
+        case '6M': from = new Date(now); from.setMonth(now.getMonth() - 6); break;
+        case 'YTD': from = new Date(now.getFullYear(), 0, 1); break;
+        case '1Y': from = new Date(now); from.setFullYear(now.getFullYear() - 1); break;
+        default: from = new Date(0);
       }
-    });
+      const filtered = rawHistory.filter(d => new Date(d.date) >= from);
+      drawChart(filtered);
+    }
+
+    drawChart(rawHistory);
   </script>
 </body>
 </html>
-
-
-
