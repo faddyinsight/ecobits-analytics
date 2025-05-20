@@ -25,14 +25,14 @@
         return JSON.parse(url.searchParams.get(name) || "[]");
       }
 
-      const latest = getParam("latest");     // e.g. [5, 8, 4, 6, 7, 3]
-      const previous = getParam("previous"); // e.g. [4, 6, 3, 5, 6, 2]
-      const average = getParam("average");   // e.g. [4.5, 7, 3.5, 5.5, 6.5, 2.5]
+      const latest = getParam("latest");     // e.g. [5, 4, 6, 7, 3]
+      const previous = getParam("previous"); // e.g. [4, 3, 5, 6, 2]
+      const average = getParam("average");   // e.g. [4.5, 3.5, 5.5, 6.5, 2.5]
 
       const allValues = [...latest, ...previous, ...average];
       const maxScore = Math.max(...allValues);
 
-      const labels = ['Habits', 'Behavior', 'Trade-offs', 'Planning', 'Belief', 'Peer Effect'];
+      const labels = ['Habits', 'Trade-offs', 'Planning', 'Belief', 'Peer Effect'];
 
       const ctx = document.getElementById('myChart').getContext('2d');
       new Chart(ctx, {
@@ -53,14 +53,13 @@
             {
               label: 'Average Score',
               data: average,
-              backgroundColor: '#F9A825'  // Deep Yellow/Amber
+              backgroundColor: '#F9A825'  // Deep Yellow
             }
           ]
         },
         options: {
           responsive: true,
-          animation: {
-            duration: 0 }, // 🔧 Disable bar animation on load
+          animation: { duration: 0 },
           plugins: {
             title: {
               display: true,
