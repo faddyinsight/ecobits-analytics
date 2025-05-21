@@ -111,7 +111,7 @@
             },
             y: {
               beginAtZero: true,
-              max: maxScore + 2,
+              suggestedMax: Math.max(...data.map(d => d.score)) + 2,
               ticks: { stepSize: 2 },
               grid: {
                 drawBorder: false,
