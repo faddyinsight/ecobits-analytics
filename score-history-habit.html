@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -6,14 +7,15 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       margin: 0;
       padding: 20px;
-      background: white;
+      background: #f9f9f9;
+      color: #333;
     }
     h2 {
       text-align: center;
-      margin-bottom: 2px;
+      margin-bottom: 10px;
     }
     .filters {
       text-align: center;
@@ -21,14 +23,26 @@
     }
     .filters button {
       margin: 0 5px;
-      padding: 4px 10px;
-      font-size: 12px;
+      padding: 6px 12px;
+      font-size: 13px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background-color: white;
       cursor: pointer;
     }
-    canvas {
-      display: block;
-      margin: 0 auto;
-      max-width: 100%;
+    .filters button:hover {
+      background-color: #f0f0f0;
+    }
+    .chart-container {
+      position: relative;
+      height: 400px;
+      width: 100%;
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
   </style>
 </head>
@@ -42,7 +56,9 @@
     <button onclick="filterData('YTD')">YTD</button>
     <button onclick="filterData('1Y')">1Y</button>
   </div>
-  <canvas id="scoreChart" width="800" height="400"></canvas>
+  <div class="chart-container">
+    <canvas id="scoreChart"></canvas>
+  </div>
   <script>
     const rawHistory = JSON.parse(decodeURIComponent(new URLSearchParams(window.location.search).get("history") || "[]"));
     let chart;
@@ -59,31 +75,37 @@
             label: 'Habits Score',
             data: data.map(d => d.score),
             borderColor: '#3366cc',
-            borderWidth: 2.5,
-            fill: false,
+            backgroundColor: 'rgba(51,102,204,0.1)',
+            fill: true,
             tension: 0.4,
-            pointRadius: 0
+            pointRadius: 4,
+            pointHoverRadius: 6
           }]
         },
         options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 1000 },
           plugins: {
             legend: { display: false },
-            title: { display: false }
+            tooltip: {
+              callbacks: {
+                label: context => `Score: ${context.parsed.y}`
+              }
+            }
           },
           scales: {
             x: {
-              ticks: {
-                autoSkip: false
-              },
+              ticks: { autoSkip: true, maxTicksLimit: 7 },
               grid: { display: false }
             },
             y: {
               beginAtZero: true,
               suggestedMax: Math.max(...data.map(d => d.score)) + 2,
-              ticks: { stepSize: 1 },
+              ticks: { stepSize: 2 },
               grid: {
                 drawBorder: false,
-                color: '#ccc'
+                color: '#e0e0e0'
               }
             }
           }
