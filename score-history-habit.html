@@ -65,6 +65,7 @@
 
     function drawChart(data) {
       data.sort((a, b) => new Date(a.date) - new Date(b.date));
+      const maxScore = Math.max(...data.map(d => d.score));
       const ctx = document.getElementById('scoreChart').getContext('2d');
       if (chart) chart.destroy();
       chart = new Chart(ctx, {
@@ -78,8 +79,8 @@
             backgroundColor: 'rgba(51,102,204,0.1)',
             fill: true,
             tension: 0.4,
-            pointRadius: 4,
-            pointHoverRadius: 6
+            pointRadius: 0,
+            pointHoverRadius: 0
           }]
         },
         options: {
@@ -101,7 +102,7 @@
             },
             y: {
               beginAtZero: true,
-              suggestedMax: Math.max(...data.map(d => d.score)) + 2,
+              suggestedMax: maxScore + 2,
               ticks: { stepSize: 2 },
               grid: {
                 drawBorder: false,
