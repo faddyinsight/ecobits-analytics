@@ -42,29 +42,28 @@
     const params = new URLSearchParams(window.location.search);
     const rawData = JSON.parse(params.get("trendHistory") || "[]");
 
-    // Parse and get latest entry per day
-    const parsed = rawData.map(e => ({ date: new Date(e.date), score: e.score }))
+    // Parse and dedupe to latest per day
+    const parsed = rawData.map(e => ({ date: new Date(e.date), score: Number(e.score) }))
       .sort((a, b) => b.date - a.date);
     const uniqueMap = new Map();
     parsed.forEach(item => {
       const day = item.date.toISOString().split("T")[0];
       if (!uniqueMap.has(day)) uniqueMap.set(day, item);
     });
-    const uniqueData = Array.from(uniqueMap.values())
-      .sort((a, b) => a.date - b.date);
+    const uniqueData = Array.from(uniqueMap.values()).sort((a, b) => a.date - b.date);
 
     const ctx = document.getElementById("trendChart").getContext("2d");
     const chart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: [],
         datasets: [{
           label: "Behavior Trend",
           data: [],
+          parsing: { xAxisKey: 'x', yAxisKey: 'y' },
           fill: false,
-          tension: 0.4,          // smooth curve
+          tension: 0.4,
           borderWidth: 2,
-          pointRadius: 0        // no markers
+          pointRadius: 0
         }]
       },
       options: {
@@ -73,6 +72,8 @@
         plugins: { legend: { display: false } },
         scales: {
           x: {
+            type: 'time',
+            time: { unit: 'day', tooltipFormat: 'MMM d' },
             ticks: { font: { size: 10 } },
             grid: { display: false }
           },
@@ -95,18 +96,16 @@
         const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (days - 1));
         filtered = uniqueData.filter(d => d.date >= start && d.date <= now);
       }
-      const labels = filtered.map(d => d.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }));
-      const data = filtered.map(d => d.score);
+      const points = filtered.map(d => ({ x: d.date, y: d.score }));
 
-      const minScore = Math.min(...data);
-      const maxScore = Math.max(...data);
-      const yMin = minScore - 0.5;
-      const yMax = maxScore + 0.5;
-
-      chart.data.labels = labels;
-      chart.data.datasets[0].data = data;
-      chart.options.scales.y.min = yMin;
-      chart.options.scales.y.max = yMax;
+      const scores = points.map(p => p.y);
+      const minScore = Math.min(...scores);
+      const maxScore = Math.max(...scores);
+      chart.options.scales.y.min = minScore - 0.5;
+      chart.options.scales.y.max = maxScore + 0.5;
+      chart.data.datasets[0].data = points;
+      chart.options.scales.x.min = points.length ? points[0].x : undefined;
+      chart.options.scales.x.max = now;
       chart.update();
     }
 
