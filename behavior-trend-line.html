@@ -5,14 +5,24 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body { font-family: Arial; padding: 10px; margin: 0; }
-    .range-btns { margin-bottom: 12px; }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .header h2 {
+      margin: 0;
+      font-size: 18px;
+    }
     .range-btns button {
-      margin-right: 5px;
-      padding: 6px 12px;
+      margin-left: 6px;
+      padding: 5px 10px;
       border: none;
       border-radius: 6px;
       cursor: pointer;
       background-color: #eee;
+      font-size: 13px;
     }
     .range-btns button.active {
       background-color: #007acc;
@@ -21,19 +31,22 @@
   </style>
 </head>
 <body>
-  <div class="range-btns">
-    <button data-range="1W" class="active">1W</button>
-    <button data-range="1M">1M</button>
-    <button data-range="6M">6M</button>
-    <button data-range="YTD">YTD</button>
-    <button data-range="1Y">1Y</button>
+  <div class="header">
+    <h2>Behavior Trend Over Time</h2>
+    <div class="range-btns">
+      <button data-range="1W" class="active">1W</button>
+      <button data-range="1M">1M</button>
+      <button data-range="6M">6M</button>
+      <button data-range="YTD">YTD</button>
+      <button data-range="1Y">1Y</button>
+    </div>
   </div>
+
   <canvas id="trendChart"></canvas>
 
   <script>
     const ctx = document.getElementById("trendChart").getContext("2d");
 
-    // Parse query param
     const params = new URLSearchParams(window.location.search);
     const fullData = JSON.parse(decodeURIComponent(params.get("trendHistory") || "[]"));
 
@@ -56,7 +69,17 @@
         case "1Y": start.setFullYear(now.getFullYear() - 1); break;
       }
 
-      return fullData.filter(d => new Date(d.date) >= start);
+      const uniqueMap = new Map(); // Avoid duplicates per day
+
+      return fullData
+        .filter(d => new Date(d.date) >= start)
+        .sort((a, b) => new Date(a.date) - new Date(b.date))
+        .filter(d => {
+          const key = formatDate(d.date);
+          if (uniqueMap.has(key)) return false;
+          uniqueMap.set(key, true);
+          return true;
+        });
     }
 
     function drawChart(filtered) {
@@ -73,8 +96,10 @@
             label: "Behavior Trend",
             data: scores,
             borderWidth: 2,
-            tension: 0.3,
-            pointRadius: 3
+            borderColor: "#007acc",
+            tension: 0.4,
+            pointRadius: 0,
+            fill: false
           }]
         },
         options: {
@@ -83,12 +108,20 @@
             legend: { display: false }
           },
           scales: {
-            y: { beginAtZero: true },
             x: {
-              ticks: {
-                autoSkip: true,
-                maxRotation: 0
-              }
+              title: {
+                display: true,
+                text: "Date"
+              },
+              grid: { display: false }
+            },
+            y: {
+              title: {
+                display: true,
+                text: "Trend Score"
+              },
+              grid: { display: false },
+              beginAtZero: false
             }
           }
         }
@@ -109,7 +142,6 @@
       });
     });
 
-    // Initial draw
     drawChart(filterData("1W"));
   </script>
 </body>
