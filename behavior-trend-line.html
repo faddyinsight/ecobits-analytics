@@ -1,60 +1,116 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Behavior Trend Chart</title>
+  <meta charset="UTF-8" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { margin: 0; font-family: Arial; }
-    canvas { max-width: 100%; height: auto; }
+    body { font-family: Arial; padding: 10px; margin: 0; }
+    .range-btns { margin-bottom: 12px; }
+    .range-btns button {
+      margin-right: 5px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background-color: #eee;
+    }
+    .range-btns button.active {
+      background-color: #007acc;
+      color: white;
+    }
   </style>
 </head>
 <body>
+  <div class="range-btns">
+    <button data-range="1W" class="active">1W</button>
+    <button data-range="1M">1M</button>
+    <button data-range="6M">6M</button>
+    <button data-range="YTD">YTD</button>
+    <button data-range="1Y">1Y</button>
+  </div>
   <canvas id="trendChart"></canvas>
 
   <script>
+    const ctx = document.getElementById("trendChart").getContext("2d");
+
+    // Parse query param
     const params = new URLSearchParams(window.location.search);
-    const historyData = JSON.parse(params.get("trendHistory") || "[]");
+    const fullData = JSON.parse(decodeURIComponent(params.get("trendHistory") || "[]"));
 
-    const labels = historyData.map(e => e.date);
-    const data = historyData.map(e => e.score);
+    let chart;
 
-    new Chart(document.getElementById("trendChart"), {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          label: "Behavior Trend (Normalized)",
-          data,
-          fill: false,
-          tension: 0.4,
-          borderWidth: 2,
-          pointRadius: 3
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: true }
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString("en-GB", { day: '2-digit', month: 'short' });
+    }
+
+    function filterData(range) {
+      const now = new Date();
+      const start = new Date();
+
+      switch (range) {
+        case "1W": start.setDate(now.getDate() - 7); break;
+        case "1M": start.setMonth(now.getMonth() - 1); break;
+        case "6M": start.setMonth(now.getMonth() - 6); break;
+        case "YTD": start.setMonth(0); start.setDate(1); break;
+        case "1Y": start.setFullYear(now.getFullYear() - 1); break;
+      }
+
+      return fullData.filter(d => new Date(d.date) >= start);
+    }
+
+    function drawChart(filtered) {
+      const labels = filtered.map(d => formatDate(d.date));
+      const scores = filtered.map(d => d.score);
+
+      if (chart) chart.destroy();
+
+      chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [{
+            label: "Behavior Trend",
+            data: scores,
+            borderWidth: 2,
+            tension: 0.3,
+            pointRadius: 3
+          }]
         },
-        scales: {
-          y: {
-            suggestedMin: -1,
-            suggestedMax: 1,
-            title: {
-              display: true,
-              text: "Trend Score"
-            }
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false }
           },
-          x: {
-            title: {
-              display: true,
-              text: "Date"
+          scales: {
+            y: { beginAtZero: true },
+            x: {
+              ticks: {
+                autoSkip: true,
+                maxRotation: 0
+              }
             }
           }
         }
-      }
+      });
+    }
+
+    function setActive(button) {
+      document.querySelectorAll(".range-btns button").forEach(btn => btn.classList.remove("active"));
+      button.classList.add("active");
+    }
+
+    document.querySelectorAll(".range-btns button").forEach(button => {
+      button.addEventListener("click", () => {
+        const range = button.getAttribute("data-range");
+        const filtered = filterData(range);
+        setActive(button);
+        drawChart(filtered);
+      });
     });
+
+    // Initial draw
+    drawChart(filterData("1W"));
   </script>
 </body>
 </html>
