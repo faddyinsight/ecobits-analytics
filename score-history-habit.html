@@ -15,32 +15,39 @@
     }
     h2 {
       text-align: center;
-      margin-bottom: 10px;
+      font-size: 18px;
+      margin-bottom: 8px;
     }
     .filters {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
     .filters button {
-      margin: 0 5px;
-      padding: 6px 12px;
-      font-size: 13px;
+      margin: 0 4px;
+      padding: 3px 6px;
+      font-size: 10px;
       border: 1px solid #ccc;
       border-radius: 4px;
       background-color: white;
+      color: #3366cc;
       cursor: pointer;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .filters button.active {
+      background-color: #3366cc;
+      color: white;
     }
     .filters button:hover {
       background-color: #f0f0f0;
     }
     .chart-container {
       position: relative;
-      height: 400px;
+      height: 380px;
       width: 100%;
-      max-width: 900px;
+      max-width: 880px;
       margin: auto;
       background: white;
-      padding: 20px;
+      padding: 18px;
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
@@ -49,12 +56,12 @@
 <body>
   <h2>Score History - Habits</h2>
   <div class="filters">
-    <button onclick="filterData('1W')">1W</button>
-    <button onclick="filterData('2WK')">2WK</button>
-    <button onclick="filterData('1M')">1M</button>
-    <button onclick="filterData('6M')">6M</button>
-    <button onclick="filterData('YTD')">YTD</button>
-    <button onclick="filterData('1Y')">1Y</button>
+    <button onclick="filterData('1W', this)">1W</button>
+    <button onclick="filterData('2WK', this)">2WK</button>
+    <button onclick="filterData('1M', this)">1M</button>
+    <button onclick="filterData('6M', this)">6M</button>
+    <button onclick="filterData('YTD', this)">YTD</button>
+    <button onclick="filterData('1Y', this)">1Y</button>
   </div>
   <div class="chart-container">
     <canvas id="scoreChart"></canvas>
@@ -114,7 +121,7 @@
       });
     }
 
-    function filterData(range) {
+    function filterData(range, button) {
       const now = new Date();
       let from;
       switch(range) {
@@ -126,6 +133,10 @@
         case '1Y': from = new Date(now); from.setFullYear(now.getFullYear() - 1); break;
         default: from = new Date(0);
       }
+
+      document.querySelectorAll('.filters button').forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+
       const filtered = rawHistory.filter(d => new Date(d.date) >= from);
       drawChart(filtered);
     }
