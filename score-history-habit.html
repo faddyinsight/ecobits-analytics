@@ -12,17 +12,17 @@
     }
     h2 {
       text-align: center;
-      font-size: 18px;
+      font-size: 16px;    /* reduced title font */
       margin-bottom: 8px;
     }
     .filters {
       text-align: center;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
     .filters button {
-      margin: 0 4px;
-      padding: 3px 6px;
-      font-size: 10px;
+      margin: 0 3px;
+      padding: 2px 6px;
+      font-size: 9px;     /* reduced toggle font */
       border: 1px solid #ccc;
       border-radius: 4px;
       background: white;
@@ -39,12 +39,12 @@
     }
     .chart-container {
       position: relative;
-      height: 380px;
+      height: 360px;      /* slight height tweak */
       width: 100%;
       max-width: 880px;
       margin: auto;
       background: white;
-      padding: 18px;
+      padding: 16px;
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
@@ -72,8 +72,8 @@
     function drawChart(data) {
       if (!data || data.length === 0) return;
 
-      data.sort((a,b)=> new Date(a.date)-new Date(b.date));
-      const scores = data.map(d=> d.score);
+      data.sort((a, b) => new Date(a.date) - new Date(b.date));
+      const scores = data.map(d => d.score);
       const maxScore = Math.max(...scores);
       const ctx = document.getElementById('scoreChart').getContext('2d');
       if (chart) chart.destroy();
@@ -81,8 +81,8 @@
         type: 'line',
         data: {
           labels: [...new Set(
-            data.map(d=> new Date(d.date)
-              .toLocaleDateString('en-US',{month:'short',day:'numeric'}))
+            data.map(d => new Date(d.date)
+              .toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))
           )],
           datasets: [{
             label: 'Habits Score',
@@ -98,7 +98,7 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          animation: { duration: 1000 },
+          animation: { duration: 800 },
           plugins: {
             legend: { display: false },
             tooltip: {
@@ -109,12 +109,12 @@
           },
           scales: {
             x: {
-              ticks: { autoSkip: true, maxTicksLimit: 7 },
+              ticks: { autoSkip: true, maxTicksLimit: 6 },
               grid: { display: false }
             },
             y: {
               beginAtZero: true,
-              max: maxScore + 2,
+              max: maxScore + 2,     /* cap at +2 above highest */
               ticks: { stepSize: 2 },
               grid: { drawBorder: false, color: '#e0e0e0' }
             }
@@ -126,21 +126,22 @@
     function filterData(range, btn) {
       const now = new Date();
       let from;
-      switch(range) {
-        case '1W': from = new Date(now); from.setDate(now.getDate()-7); break;
-        case '2WK': from = new Date(now); from.setDate(now.getDate()-14); break;
-        case '1M': from = new Date(now); from.setMonth(now.getMonth()-1); break;
-        case '6M': from = new Date(now); from.setMonth(now.getMonth()-6); break;
-        case 'YTD': from = new Date(now.getFullYear(),0,1); break;
-        case '1Y': from = new Date(now); from.setFullYear(now.getFullYear()-1); break;
-        default: from = new Date(0);
+      switch (range) {
+        case '1W':  from = new Date(now); from.setDate(now.getDate() - 7); break;
+        case '2WK': from = new Date(now); from.setDate(now.getDate() - 14); break;
+        case '1M':  from = new Date(now); from.setMonth(now.getMonth() - 1); break;
+        case '6M':  from = new Date(now); from.setMonth(now.getMonth() - 6); break;
+        case 'YTD': from = new Date(now.getFullYear(), 0, 1); break;
+        case '1Y':  from = new Date(now); from.setFullYear(now.getFullYear() - 1); break;
+        default:    from = new Date(0);
       }
-      document.querySelectorAll('.filters button').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.filters button').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      const filtered = rawHistory.filter(d=> new Date(d.date)>=from);
+      const filtered = rawHistory.filter(d => new Date(d.date) >= from);
       drawChart(filtered);
     }
 
+    // initial draw with full history
     drawChart(rawHistory);
   </script>
 </body>
