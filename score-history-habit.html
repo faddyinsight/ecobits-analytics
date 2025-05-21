@@ -71,6 +71,8 @@
     let chart;
 
     function drawChart(data) {
+      if (!data || data.length === 0) return;
+
       data.sort((a, b) => new Date(a.date) - new Date(b.date));
       const maxScore = Math.max(...data.map(d => d.score));
       const ctx = document.getElementById('scoreChart').getContext('2d');
@@ -107,9 +109,9 @@
               ticks: { autoSkip: true, maxTicksLimit: 7 },
               grid: { display: false }
             },
-           y: {
-  beginAtZero: true,
-  max: maxScore + 2,
+            y: {
+              beginAtZero: true,
+              max: maxScore + 2,
               ticks: { stepSize: 2 },
               grid: {
                 drawBorder: false,
