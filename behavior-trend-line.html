@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Behavior Trend Chart</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { margin: 0; font-family: Arial; }
+    canvas { max-width: 100%; height: auto; }
+  </style>
+</head>
+<body>
+  <canvas id="trendChart"></canvas>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const historyData = JSON.parse(params.get("trendHistory") || "[]");
+
+    const labels = historyData.map(e => e.date);
+    const data = historyData.map(e => e.score);
+
+    new Chart(document.getElementById("trendChart"), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: "Behavior Trend (Normalized)",
+          data,
+          fill: false,
+          tension: 0.4,
+          borderWidth: 2,
+          pointRadius: 3
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: true }
+        },
+        scales: {
+          y: {
+            suggestedMin: -1,
+            suggestedMax: 1,
+            title: {
+              display: true,
+              text: "Trend Score"
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: "Date"
+            }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
