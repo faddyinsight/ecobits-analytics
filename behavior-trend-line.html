@@ -1,153 +1,60 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <title>Behavior Trend Chart</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { font-family: Arial; padding: 10px; margin: 0; }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-    .header h2 {
-      margin: 0;
-      font-size: 18px;
-    }
-    .range-btns button {
-      margin-left: 6px;
-      padding: 5px 10px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      background-color: #eee;
-      font-size: 13px;
-    }
-    .range-btns button.active {
-      background-color: #007acc;
-      color: white;
-    }
+    body { margin: 0; font-family: Arial; }
+    canvas { max-width: 100%; height: auto; }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h2>Behavior Trend Over Time</h2>
-    <div class="range-btns">
-      <button data-range="1W" class="active">1W</button>
-      <button data-range="1M">1M</button>
-      <button data-range="6M">6M</button>
-      <button data-range="YTD">YTD</button>
-      <button data-range="1Y">1Y</button>
-    </div>
-  </div>
-
   <canvas id="trendChart"></canvas>
 
   <script>
-    const ctx = document.getElementById("trendChart").getContext("2d");
-
     const params = new URLSearchParams(window.location.search);
-    const fullData = JSON.parse(decodeURIComponent(params.get("trendHistory") || "[]"));
+    const historyData = JSON.parse(params.get("trendHistory") || "[]");
 
-    let chart;
+    const labels = historyData.map(e => e.date);
+    const data = historyData.map(e => e.score);
 
-    function formatDate(dateStr) {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString("en-GB", { day: '2-digit', month: 'short' }); // e.g. 21 May
-    }
-
-    function filterData(range) {
-      const now = new Date();
-      const start = new Date();
-
-      switch (range) {
-        case "1W": start.setDate(now.getDate() - 7); break;
-        case "1M": start.setMonth(now.getMonth() - 1); break;
-        case "6M": start.setMonth(now.getMonth() - 6); break;
-        case "YTD": start.setMonth(0); start.setDate(1); break;
-        case "1Y": start.setFullYear(now.getFullYear() - 1); break;
-      }
-
-      // Step 1: Filter by date range and sort descending
-      const inRange = fullData
-        .filter(d => new Date(d.date) >= start)
-        .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-      // Step 2: Keep only latest entry per date
-      const latestPerDayMap = new Map();
-      inRange.forEach(d => {
-        const dayKey = new Date(d.date).toISOString().split("T")[0];
-        if (!latestPerDayMap.has(dayKey)) latestPerDayMap.set(dayKey, d);
-      });
-
-      // Step 3: Return ascending order
-      return Array.from(latestPerDayMap.values())
-        .sort((a, b) => new Date(a.date) - new Date(b.date));
-    }
-
-    function drawChart(filtered) {
-      const labels = filtered.map(d => formatDate(d.date));
-      const scores = filtered.map(d => d.score);
-
-      if (chart) chart.destroy();
-
-      chart = new Chart(ctx, {
-        type: "line",
-        data: {
-          labels: labels,
-          datasets: [{
-            label: "Behavior Trend",
-            data: scores,
-            borderWidth: 2,
-            borderColor: "#007acc",
-            tension: 0.4,
-            pointRadius: 0,
-            fill: false
-          }]
+    new Chart(document.getElementById("trendChart"), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: "Behavior Trend (Normalized)",
+          data,
+          fill: false,
+          tension: 0.4,
+          borderWidth: 2,
+          pointRadius: 3
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: true }
         },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false }
+        scales: {
+          y: {
+            suggestedMin: -1,
+            suggestedMax: 1,
+            title: {
+              display: true,
+              text: "Trend Score"
+            }
           },
-          scales: {
-            x: {
-              title: {
-                display: true,
-                text: "Date"
-              },
-              grid: { display: false }
-            },
-            y: {
-              title: {
-                display: true,
-                text: "Trend Score"
-              },
-              grid: { display: false },
-              beginAtZero: false
+          x: {
+            title: {
+              display: true,
+              text: "Date"
             }
           }
         }
-      });
-    }
-
-    function setActive(button) {
-      document.querySelectorAll(".range-btns button").forEach(btn => btn.classList.remove("active"));
-      button.classList.add("active");
-    }
-
-    document.querySelectorAll(".range-btns button").forEach(button => {
-      button.addEventListener("click", () => {
-        const range = button.getAttribute("data-range");
-        const filtered = filterData(range);
-        setActive(button);
-        drawChart(filtered);
-      });
+      }
     });
-
-    // Initial chart load
-    drawChart(filterData("1W"));
   </script>
 </body>
 </html>
