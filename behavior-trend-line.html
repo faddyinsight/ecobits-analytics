@@ -54,7 +54,7 @@
 
     function formatDate(dateStr) {
       const date = new Date(dateStr);
-      return date.toLocaleDateString("en-GB", { day: '2-digit', month: 'short' });
+      return date.toLocaleDateString("en-GB", { day: '2-digit', month: 'short' }); // e.g. 21 May
     }
 
     function filterData(range) {
@@ -69,17 +69,21 @@
         case "1Y": start.setFullYear(now.getFullYear() - 1); break;
       }
 
-      const uniqueMap = new Map(); // Avoid duplicates per day
-
-      return fullData
+      // Step 1: Filter by date range and sort descending
+      const inRange = fullData
         .filter(d => new Date(d.date) >= start)
-        .sort((a, b) => new Date(a.date) - new Date(b.date))
-        .filter(d => {
-          const key = formatDate(d.date);
-          if (uniqueMap.has(key)) return false;
-          uniqueMap.set(key, true);
-          return true;
-        });
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      // Step 2: Keep only latest entry per date
+      const latestPerDayMap = new Map();
+      inRange.forEach(d => {
+        const dayKey = new Date(d.date).toISOString().split("T")[0];
+        if (!latestPerDayMap.has(dayKey)) latestPerDayMap.set(dayKey, d);
+      });
+
+      // Step 3: Return ascending order
+      return Array.from(latestPerDayMap.values())
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
     }
 
     function drawChart(filtered) {
@@ -142,6 +146,7 @@
       });
     });
 
+    // Initial chart load
     drawChart(filterData("1W"));
   </script>
 </body>
